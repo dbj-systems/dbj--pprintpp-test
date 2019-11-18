@@ -1,6 +1,4 @@
 
-#define PPRINTPP_AVOID_STL
-
 #include "dbj--pprintpp/pprintpp.hpp"
 
 
@@ -31,26 +29,46 @@ int wmain(int, wchar_t * [])
 #else
 	printf("_MSVC_LANG: %lu\n", _MSVC_LANG);
 #endif
+
+	pprintf("\n PPRINTPP_AVOID_STL is set to {}", PPRINTPP_AVOID_STL);
+	pprintf("\n PPRINTPP_STANDARD_CHAR_PTR is set to {}", PPRINTPP_STANDARD_CHAR_PTR);
+
+
 	test_1();
 	test_2();
-#ifdef PPRINTPP_STANDARD_CHAR_PTR
 	test_3();
-#endif
 	printf("\nDone...\n");
+
+	::system("@pause");
 	return EXIT_SUCCESS;
 }
+/*
+---------------------------------------------------------------------------------------
+Tests data
+*/
+
+constexpr char8_t  hiragana8[] = u8"ひらがな";
+constexpr char16_t hiragana16[] = u"ひらがな";
+constexpr char32_t hiragana32[] = U"ひらがな";
+
+/*
+---------------------------------------------------------------------------------------
+Tests begin here
+*/
 
 extern "C" int test_1(int, wchar_t* [])
 {
-	// DBJ  -- added 
-#ifdef _MSC_VER
+
 	// NOTE: 
 	// on windows10 make sure you set the console font that can display your glyphs
-	// Lucida Console seems ok for cyrillic glyphs
-	pprintf("\n\n{s}\n\n", u8"Душан Јовановић (u8 string literal)" ); // utf8 encoded char
-#endif // _MSC_VER
+	// "MS Gothic" seems ok for these glyphs for Windows 10 Console, circa 2019 Nov
+	// CLANG 8.0.1 does shoe his only as a numeric code
+	// MSVC shows the gylphs
+	pprintf("\n\n u8 string literal -- Hiragana: {s}", u8"ひらがな"); // utf8 encoded char
+	pprintf("\n\n u  string literal -- Hiragana: {s}", hiragana16 ); // utf8 encoded char
+	pprintf("\n\n U  string literal -- Hiragana: {s}", hiragana32 ); // utf8 encoded char
 
-	pprintf("This is \\{ how you mask } {s}.\n", "curly braces");
+	pprintf("\n\nThis is \\{ how you mask } {s}.", "curly braces");
 
 	pprintf("Of course it's possible to add more formatting flags:\n"
 		"{x}, {10x}, {#10x}, and {#010x} use the normal printf capabilities.\n",
@@ -104,6 +122,11 @@ extern "C" int test_2(int, wchar_t* [])
 {
 	PPRINTPP_TEST("", "");
 
+	auto s8  = AUTOFORMAT("{s}", hiragana8);
+	auto s16 = AUTOFORMAT("{s}", hiragana16);
+	auto s32 = AUTOFORMAT("{s}", hiragana32);
+
+
 	PPRINTPP_TEST("%%", "%%");
 	PPRINTPP_TEST("%d %f", "{} %f", 123, 1.23f);
 	PPRINTPP_TEST("%f %d", "%f {}", 1.23f, 123);
@@ -116,12 +139,15 @@ extern "C" int test_2(int, wchar_t* [])
 	PPRINTPP_TEST("%p", "{}", reinterpret_cast<void*>(0));
 
 
-#ifdef PPRINTPP_STANDARD_CHAR_PTR
+#if (PPRINTPP_STANDARD_CHAR_PTR == 0)
+	// display 'char *' with '%p'
 	PPRINTPP_TEST("%p", "{}", "str");
 #else
+	// by default char * , get's `s%` pair
 	PPRINTPP_TEST("%s", "{}", "str");
 #endif
 
+	 // `{s}` always get's '%s'
 	PPRINTPP_TEST("%s", "{s}", "str");
 
 	PPRINTPP_TEST("%c", "{}", static_cast<char>(123));
@@ -159,20 +185,16 @@ extern "C" int test_2(int, wchar_t* [])
 }
 #undef PPRINTPP_TEST
 
-#ifdef PPRINTPP_STANDARD_CHAR_PTR
 extern "C" int test_3(int, wchar_t* [])
 {
 	std::exception x1("runtime      error");
 	std::exception x2("cosmological error");
 
-	// DBJ -- {s} is not required for string output
-	// that is the default behaviour
-	pprintf("\nException: { } \nException: { }\n", x1.what(), x2.what() );
+	pprintf("\nException 1: '{ }' \nException 2: '{ }'\n", x1.what(), x2.what() );
 
-	const char* slit = "STRING LITERAL";
-	pprintf("\nString literal without 's': { } ", slit );
+	const char* slit = "Lorem ipsum dolor sit amet.";
+	pprintf("\nString literal without 's': \"{ }\" ", slit );
 
 	[[maybe_unused]] auto dumzy = true;
 	return EXIT_SUCCESS;
 }
-#endif // PPRINTPP_STANDARD_CHAR_PTR
