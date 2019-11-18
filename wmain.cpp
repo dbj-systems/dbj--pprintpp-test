@@ -39,12 +39,16 @@ int wmain(int, wchar_t * [])
 	test_3();
 	printf("\nDone...\n");
 
-	::system("@pause");
+ 	::system("@pause");
 	return EXIT_SUCCESS;
 }
 /*
 ---------------------------------------------------------------------------------------
 Tests data
+
+2019 Nov, c++20 both  msvc and clang 8, have the ability to printf 
+utf-8 string literals, that is: u8 aka 'char8_t *'
+char16_t and char32_t are treated as pointers by printf() 
 */
 
 constexpr char8_t  hiragana8[] = u8"ひらがな";
@@ -58,15 +62,12 @@ Tests begin here
 
 extern "C" int test_1(int, wchar_t* [])
 {
-
 	// NOTE: 
 	// on windows10 make sure you set the console font that can display your glyphs
 	// "MS Gothic" seems ok for these glyphs for Windows 10 Console, circa 2019 Nov
-	// CLANG 8.0.1 does shoe his only as a numeric code
-	// MSVC shows the gylphs
-	pprintf("\n\n u8 string literal -- Hiragana: {s}", u8"ひらがな"); // utf8 encoded char
-	pprintf("\n\n u  string literal -- Hiragana: {s}", hiragana16 ); // utf8 encoded char
-	pprintf("\n\n U  string literal -- Hiragana: {s}", hiragana32 ); // utf8 encoded char
+	pprintf("\n\n u8 string literal -- {s}", hiragana8  ); 
+	pprintf("\n\n char16  string literal is printf'd as a pointer -- {s}", hiragana16 ); 
+	pprintf("\n\n char32  string literal is printf'd as a pointer -- {s}", hiragana32 ); 
 
 	pprintf("\n\nThis is \\{ how you mask } {s}.", "curly braces");
 
