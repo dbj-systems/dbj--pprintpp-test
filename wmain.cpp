@@ -1,6 +1,8 @@
+
 #define PPRINTPP_AVOID_STL
-#define PPRINTPP_STANDARD_CHAR_PTR
-#include "../include/pprintpp/pprintpp.hpp"
+
+#include "dbj--pprintpp/pprintpp.hpp"
+
 
 #include <cassert>
 #include <cstring>
@@ -10,6 +12,8 @@
 
 extern "C" int test_1(int = 0, wchar_t* [] = nullptr );
 extern "C" int test_2(int = 0, wchar_t* [] = nullptr );
+
+// the default behaviour
 #ifdef PPRINTPP_STANDARD_CHAR_PTR
 extern "C" int test_3(int = 0, wchar_t* [] = nullptr );
 #endif
@@ -162,6 +166,7 @@ extern "C" int test_3(int, wchar_t* [])
 	std::exception x2("cosmological error");
 
 	// DBJ -- {s} is not required for string output
+	// that is the default behaviour
 	pprintf("\nException: { } \nException: { }\n", x1.what(), x2.what() );
 
 	const char* slit = "STRING LITERAL";
